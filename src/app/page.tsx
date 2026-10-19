@@ -5,6 +5,7 @@ import {
   MessagesSquareIcon,
   StarIcon,
 } from "lucide-react";
+import { AnimeGrid } from "@/components/anime/anime-card";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,6 +13,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { seasonLabel } from "@/lib/season";
+import {
+  getCurrentSeason,
+  getSeasonAnimes,
+  getTopRated,
+  type AnimeCardData,
+} from "@/server/catalog";
 
 const features = [
   {
@@ -71,6 +79,50 @@ export default function Home() {
           </Card>
         ))}
       </section>
+
+      <HomeShelves />
     </div>
+  );
+}
+
+// dados em cache ("use cache" nas consultas), então entram no HTML estático
+async function HomeShelves() {
+  const season = await getCurrentSeason();
+  const [seasonAnimes, topAnimes] = await Promise.all([
+    getSeasonAnimes(season, 12),
+    getTopRated(12),
+  ]);
+
+  return (
+    <>
+      <Shelf
+        title={`Temporada de ${seasonLabel(season)}`}
+        href="/temporada"
+        animes={seasonAnimes}
+      />
+      <Shelf title="Mais bem avaliados" href="/top" animes={topAnimes} />
+    </>
+  );
+}
+
+function Shelf({
+  title,
+  href,
+  animes,
+}: {
+  title: string;
+  href: string;
+  animes: AnimeCardData[];
+}) {
+  return (
+    <section className="flex flex-col gap-4">
+      <div className="flex items-baseline justify-between gap-4">
+        <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
+        <Link href={href} className="text-primary text-sm hover:underline">
+          Ver tudo
+        </Link>
+      </div>
+      <AnimeGrid animes={animes} />
+    </section>
   );
 }

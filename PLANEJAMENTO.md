@@ -106,8 +106,8 @@ Recalcular por job periódico, não a cada voto.
 | `/`                                        | Temporada atual, em alta, últimas discussões, feed dos amigos (se logado). |
 | `/anime/[id]/[slug]`                       | Detalhes, botão "adicionar à lista", nota, reviews, tópicos, relacionados. |
 | `/anime/[id]/episodio/[n]`                 | Discussão do episódio (com bloqueio de spoiler).                           |
-| `/busca`                                   | Busca com filtros (gênero, ano, temporada, tipo, status).                  |
-| `/temporada/[ano]/[estacao]`               | Grade da temporada.                                                        |
+| `/animes`                                  | Explorar + busca com filtros (gênero, ano, temporada, tipo, status).       |
+| `/temporada/[ano]/[mes]`                   | Grade da temporada (`/temporada/2026/outubro`).                            |
 | `/top`                                     | Ranking por nota ponderada e por popularidade.                             |
 | `/u/[username]`                            | Perfil, estatísticas, favoritos, atividade.                                |
 | `/u/[username]/lista`                      | Lista completa com abas por status.                                        |
@@ -130,15 +130,19 @@ Cada fase termina com algo funcionando e no ar.
 - [x] Layout base (header, busca, menu do usuário, modo escuro, nav mobile)
 - [ ] Criar chaves OAuth do Google e do Discord (precisa da sua conta)
 - [ ] Deploy na Vercel + Neon (precisa da sua conta; passo a passo no README)
-- [ ] Repositório git + GitHub
+- [x] Repositório git local
+- [ ] Publicar no GitHub
 
 ### Fase 1 — Catálogo + Lista pessoal (≈2 semanas) ⭐ núcleo do produto
 
-- [ ] Script de importação da AniList (seed) + job de atualização
-- [ ] Página do anime, busca, temporada, top
-- [ ] Adicionar à lista, mudar status, nota, progresso (+1 episódio com um clique)
-- [ ] Página da lista do usuário com abas e ordenação
-- [ ] Nota ponderada e contagem de membros
+- [x] Script de importação da AniList (`npm run anime:import`) + job diário (`/api/cron/sync`)
+- [x] Página do anime, explorar/busca (`/animes`, sem acento e com busca sob demanda na AniList), temporada, top
+- [x] Adicionar à lista, mudar status, nota, progresso (+1 episódio com um clique)
+- [x] Página da lista do usuário com abas por status (ordem: atualizados recentemente)
+- [x] Nota ponderada (base AniList + votos da comunidade) e contagem de membros
+- [x] Perfil público com estatísticas e `/configuracoes` (escolher username após login social)
+- [ ] Ordenar a lista por título/nota (hoje só por atualização)
+- [ ] Relações entre animes (sequência, prequel) na página do anime
 
 ### Fase 2 — Fórum (≈2 semanas)
 

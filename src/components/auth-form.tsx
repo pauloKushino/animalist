@@ -86,6 +86,8 @@ export function AuthForm({
     const { error } = await authClient.signIn.social({
       provider,
       callbackURL: "/",
+      // conta nova via Google/Discord ainda não tem username
+      newUserCallbackURL: "/configuracoes",
     });
     if (error) {
       setPending(false);

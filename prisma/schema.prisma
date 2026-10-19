@@ -17,20 +17,21 @@ enum Role {
 }
 
 model User {
-  id              String    @id
+  id              String      @id
   name            String
-  email           String    @unique
-  emailVerified   Boolean   @default(false)
+  email           String      @unique
+  emailVerified   Boolean     @default(false)
   image           String?
   // plugin username do Better Auth: `username` é sempre minúsculo, `displayUsername` guarda como foi digitado
-  username        String?   @unique
+  username        String?     @unique
   displayUsername String?
-  role            Role      @default(USER)
+  role            Role        @default(USER)
   bio             String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
   sessions        Session[]
   accounts        Account[]
+  listEntries     ListEntry[]
 
   @@map("user")
 }
@@ -80,4 +81,133 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+// ---------------------------------------------------------------------------
+// Catálogo (importado da AniList)
+// ---------------------------------------------------------------------------
+
+enum AnimeFormat {
+  TV
+  TV_SHORT
+  MOVIE
+  SPECIAL
+  OVA
+  ONA
+  MUSIC
+}
+
+enum AnimeStatus {
+  FINISHED
+  RELEASING
+  NOT_YET_RELEASED
+  CANCELLED
+  HIATUS
+}
+
+// temporadas do Japão: WINTER = jan–mar, SPRING = abr–jun, SUMMER = jul–set, FALL = out–dez
+enum Season {
+  WINTER
+  SPRING
+  SUMMER
+  FALL
+}
+
+model Anime {
+  id           Int          @id @default(autoincrement())
+  anilistId    Int          @unique
+  malId        Int?
+  slug         String
+  titleRomaji  String
+  titleEnglish String?
+  titleNative  String?
+  synonyms     String[]
+  synopsis     String?
+  format       AnimeFormat?
+  status       AnimeStatus?
+  episodes     Int?
+  duration     Int? // minutos por episódio
+  season       Season?
+  seasonYear   Int?
+  startDate    DateTime?    @db.Date
+  endDate      DateTime?    @db.Date
+  source       String?
+  coverImage   String?
+  coverColor   String?
+  bannerImage  String?
+
+  // próximos episódios (só para animes em exibição)
+  nextEpisode   Int?
+  nextEpisodeAt DateTime?
+
+  // números da AniList: servem de ponto de partida até termos votos suficientes
+  anilistScore      Int? // 0–100
+  anilistPopularity Int  @default(0)
+
+  // números do animalist (recalculados por src/server/stats.ts)
+  score    Float? // nota ponderada 1–10
+  scoredBy Int    @default(0)
+  members  Int    @default(0)
+  rank     Int?
+
+  genres      Genre[]
+  studios     Studio[]
+  listEntries ListEntry[]
+
+  syncedAt  DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([malId])
+  @@index([seasonYear, season])
+  @@index([score(sort: Desc)])
+  @@index([members(sort: Desc), anilistPopularity(sort: Desc)])
+  @@index([status])
+}
+
+model Genre {
+  id     Int     @id @default(autoincrement())
+  name   String  @unique // nome original da AniList, ex.: "Slice of Life"
+  slug   String  @unique
+  animes Anime[]
+}
+
+model Studio {
+  id        Int     @id @default(autoincrement())
+  anilistId Int     @unique
+  name      String
+  animes    Anime[]
+}
+
+// ---------------------------------------------------------------------------
+// Lista pessoal
+// ---------------------------------------------------------------------------
+
+enum ListStatus {
+  WATCHING
+  COMPLETED
+  ON_HOLD
+  DROPPED
+  PLAN_TO_WATCH
+}
+
+model ListEntry {
+  id           String     @id @default(cuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  animeId      Int
+  anime        Anime      @relation(fields: [animeId], references: [id], onDelete: Cascade)
+  status       ListStatus
+  score        Int? // 1–10, opcional
+  progress     Int        @default(0) // episódios vistos
+  rewatchCount Int        @default(0)
+  startedAt    DateTime?  @db.Date
+  finishedAt   DateTime?  @db.Date
+  notes        String? // anotações privadas
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([userId, animeId])
+  @@index([userId, status])
+  @@index([animeId])
 }
