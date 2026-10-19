@@ -15,7 +15,9 @@
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
     "anime:import": "tsx scripts/import-anilist.ts",
-    "anime:stats": "tsx scripts/recalc-stats.ts"
+    "anime:stats": "tsx scripts/recalc-stats.ts",
+    "neon:migrate": "node --env-file=.env.neon node_modules/prisma/build/index.js migrate deploy",
+    "neon:import": "tsx --env-file=.env.neon scripts/import-anilist.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.1",

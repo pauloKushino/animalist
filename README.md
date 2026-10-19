@@ -35,6 +35,8 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 | `npm run db:studio`                     | Abre o Prisma Studio para ver o banco                                                                                                           |
 | `npm run anime:import`                  | Importa da AniList: 1.000 populares + temporada atual e próxima. Opções: `-- --paginas 40`, `-- --temporada 2026-outubro`, `-- --so-temporadas` |
 | `npm run anime:stats`                   | Recalcula nota ponderada, membros e ranking                                                                                                     |
+| `npm run neon:migrate`                  | Aplica as migrações no banco do Neon (lê `.env.neon`)                                                                                           |
+| `npm run neon:import`                   | Importa animes no banco do Neon (lê `.env.neon`)                                                                                                |
 
 ## Estrutura
 
@@ -90,11 +92,49 @@ Em produção, adicione as mesmas URLs trocando `localhost:3000` pelo domínio.
 
 ## Deploy (Vercel + Neon)
 
-1. Suba o projeto para o GitHub.
-2. Crie um banco em [neon.tech](https://neon.tech) e copie a connection string (com `?sslmode=require`).
-3. Aplique as migrações no Neon: troque temporariamente o `DATABASE_URL` do `.env` pela URL do Neon, rode `npx prisma migrate deploy` e `npm run anime:import`, e depois volte o valor local. Faça isso **antes** do primeiro deploy: o build lê o banco.
-4. Em [vercel.com/new](https://vercel.com/new), importe o repositório e configure as variáveis: `DATABASE_URL`, `BETTER_AUTH_SECRET` (gere um novo), `BETTER_AUTH_URL` (a URL da Vercel), `CRON_SECRET` (gere um novo) e as chaves OAuth.
-5. O `vercel.json` agenda `/api/cron/sync` todo dia às 6h UTC (atualiza animes em exibição e as temporadas).
+A ordem importa: o build lê o banco (home, top e temporada são pré-renderizadas), então o Neon precisa estar migrado e com animes **antes** do primeiro deploy.
+
+### 1. Banco na Neon
+
+1. Crie um projeto em [console.neon.tech](https://console.neon.tech). Região: **AWS São Paulo (sa-east-1)** se aparecer; senão, US East (N. Virginia).
+2. Em **Connect**, copie duas connection strings:
+   - **com pooling** (o host tem `-pooler`): para a Vercel
+   - **sem pooling** (direta): para migrar e importar daqui
+3. Crie o arquivo `.env.neon` na raiz (já ignorado pelo git) com a URL **direta**:
+   ```
+   DATABASE_URL="postgresql://...neon.tech/neondb?sslmode=require"
+   ```
+4. Migre e importe os animes:
+   ```bash
+   npm run neon:migrate
+   npm run neon:import
+   ```
+
+> Não use `.env.production`: o Next carrega esse arquivo sozinho no `npm run build` local, e seus builds passariam a usar o banco de produção.
+
+### 2. Projeto na Vercel
+
+1. Em [vercel.com/new](https://vercel.com/new), importe o repositório do GitHub. Escolha o nome do projeto antes: a URL fica `https://<nome>.vercel.app`.
+2. Em **Environment Variables**, adicione:
+
+   | Variável                 | Valor                                           |
+   | ------------------------ | ----------------------------------------------- |
+   | `DATABASE_URL`           | URL do Neon **com pooling**                     |
+   | `BETTER_AUTH_SECRET`     | um segredo **novo** (não reutilize o do `.env`) |
+   | `BETTER_AUTH_URL`        | `https://<nome>.vercel.app`                     |
+   | `CRON_SECRET`            | um segredo **novo**                             |
+   | `GOOGLE_*` / `DISCORD_*` | opcionais, quando tiver as chaves               |
+
+   Gerar segredos: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`
+
+3. Clique em **Deploy**.
+4. Depois do deploy, em **Settings → Functions → Function Region**, escolha a mesma região do Neon (**São Paulo, gru1** ou **Washington, iad1**) e faça um redeploy. Banco e servidor longe um do outro deixam cada página lenta.
+5. O `vercel.json` agenda `/api/cron/sync` uma vez por dia (6h UTC). Para testar na hora: **Settings → Cron Jobs → Run**.
+
+### Depois do deploy
+
+- Migração nova: `npm run neon:migrate` **antes** de subir o código que depende dela.
+- Login com Google/Discord em produção: cadastre também as URLs de callback com o domínio da Vercel (ver seção acima).
 
 ## Dados de anime
 
