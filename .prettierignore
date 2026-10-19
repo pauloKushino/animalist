@@ -1,0 +1,7 @@
+node_modules
+.next
+src/generated
+prisma/migrations
+package-lock.json
+# gerados pelo shadcn; mantém o estilo deles para não brigar com `shadcn add`
+src/components/ui

@@ -1,0 +1,22 @@
+"use client";
+
+import { MoonIcon, SunIcon } from "lucide-react";
+import { useTheme } from "next-themes";
+import { Button } from "@/components/ui/button";
+
+export function ThemeToggle() {
+  const { resolvedTheme, setTheme } = useTheme();
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      aria-label="Alternar tema claro/escuro"
+      onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+    >
+      {/* os dois ícones são renderizados e o CSS escolhe, para não dar erro de hidratação */}
+      <SunIcon className="hidden dark:block" />
+      <MoonIcon className="block dark:hidden" />
+    </Button>
+  );
+}
