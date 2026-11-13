@@ -1,8 +1,15 @@
 # animalist
 
+![CI/CD](https://github.com/pauloKushino/animalist/actions/workflows/ci-cd.yml/badge.svg)
+![Vercel](https://img.shields.io/badge/Vercel-Live-brightgreen?logo=vercel)
+
 Fórum e catálogo de animes no estilo do MyAnimeList. O plano completo está em [PLANEJAMENTO.md](PLANEJAMENTO.md).
 
 **Stack:** Next.js 16 (App Router, Cache Components) · TypeScript · Tailwind 4 + shadcn/ui · PostgreSQL 17 · Prisma 7 · Better Auth
+
+## Demo
+
+**Live:** https://animalist.vercel.app
 
 ## Rodando localmente
 
