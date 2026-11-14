@@ -10,6 +10,8 @@ Fórum e catálogo de animes no estilo do MyAnimeList. O plano completo está em
 
 A demo pública ainda não foi publicada. Para rodar localmente, siga os passos abaixo.
 
+O workflow também tem deploy opcional para a Vercel: configure os secrets `VERCEL_TOKEN`, `VERCEL_ORG_ID` e `VERCEL_PROJECT_ID` e a variável de repositório `DEPLOY_ENABLED=true`.
+
 ## Rodando localmente
 
 Precisa de Node 20+ e Docker Desktop aberto.
