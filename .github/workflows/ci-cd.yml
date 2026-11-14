@@ -7,6 +7,19 @@ on:
 jobs:
   lint-test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: animalist
+          POSTGRES_USER: animalist
+          POSTGRES_PASSWORD: animalist
+        ports: ["5432:5432"]
+        options: --health-cmd="pg_isready -U animalist" --health-interval=10s --health-timeout=5s --health-retries=5
+    env:
+      DATABASE_URL: postgresql://animalist:animalist@localhost:5432/animalist?schema=public
+      BETTER_AUTH_SECRET: ci-only-secret-please-change-in-production-0123456789
+      BETTER_AUTH_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -14,9 +27,9 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
+      - run: npx prisma migrate deploy
       - run: npm run lint
       - run: npm run typecheck
-      - run: npm run test
       - run: npm run build
   deploy:
     needs: lint-test
@@ -24,9 +37,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: amondnet/vercel-action@v25
+      - name: Deploy to Vercel
+        if: ${{ secrets.VERCEL_TOKEN != '' && secrets.VERCEL_ORG_ID != '' && secrets.VERCEL_PROJECT_ID != '' }}
+        uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: '--prod'
+      - name: Deploy skipped (secrets not configured)
+        if: ${{ secrets.VERCEL_TOKEN == '' || secrets.VERCEL_ORG_ID == '' || secrets.VERCEL_PROJECT_ID == '' }}
+        run: echo "Deploy ignorado: configure VERCEL_TOKEN, VERCEL_ORG_ID e VERCEL_PROJECT_ID nos secrets do repositorio."

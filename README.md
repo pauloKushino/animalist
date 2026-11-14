@@ -1,7 +1,6 @@
 # animalist
 
 ![CI/CD](https://github.com/pauloKushino/animalist/actions/workflows/ci-cd.yml/badge.svg)
-![Vercel](https://img.shields.io/badge/Vercel-Live-brightgreen?logo=vercel)
 
 Fórum e catálogo de animes no estilo do MyAnimeList. O plano completo está em [PLANEJAMENTO.md](PLANEJAMENTO.md).
 
@@ -9,7 +8,7 @@ Fórum e catálogo de animes no estilo do MyAnimeList. O plano completo está em
 
 ## Demo
 
-**Live:** https://animalist.vercel.app
+A demo pública ainda não foi publicada. Para rodar localmente, siga os passos abaixo.
 
 ## Rodando localmente
 
